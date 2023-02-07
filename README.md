@@ -59,8 +59,7 @@ Also you can see the [CHANGELOG](CHANGELOG.md) file.
 
 ## Authors
 
-- Sergey Belikov (sbelikov@isgneuro.com)
-- Konstantin Rozov (konstantin@isgneuro.com)
+- Vostryakov Mikhail (mvostryakov@isgneuro.com)
 
 ## License
 
