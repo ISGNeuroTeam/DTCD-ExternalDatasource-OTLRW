@@ -36,7 +36,9 @@ export class DataSourcePlugin extends BaseExternalDataSource {
     return pluginMeta;
   }
 
-  constructor({ queryString: original_otl, queryWriteString: original_otlWrite, ...rest }) {
+  constructor({ queryString, queryWriteString, ...rest }) {
+    const original_otl = queryString.replace(/\r|\n/g, '');
+    const original_otlWrite = queryWriteString.replace(/\r|\n/g, '');
     super();
     this.#logSystem = new LogSystemAdapter('0.5.0', 'no-guid', pluginMeta.name);
     this.#interactionSystem = new InteractionSystemAdapter('0.4.0');
@@ -98,7 +100,9 @@ export class DataSourcePlugin extends BaseExternalDataSource {
     await this.#job.run();
   }
 
-  editParams({ queryString: original_otl, queryWriteString: original_otlWrite, dataset, ...rest }) {
+  editParams({ queryString, queryWriteString, dataset, ...rest }) {
+    const original_otl = queryString.replace(/\r|\n/g, '');
+    const original_otlWrite = queryWriteString.replace(/\r|\n/g, '');
     if (original_otl) {
       this.#logSystem.debug(
         `Editing parameters of OTL job. Merging new parameters: ${JSON.stringify({
