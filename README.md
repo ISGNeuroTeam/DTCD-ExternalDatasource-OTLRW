@@ -1,6 +1,6 @@
 # DTCD-ExternalDataSource-OTLRW
 
-Extension plugin for [DTCD-DatasourceSystem](https://github.com/ISGNeuroTeam/DTCD-DatasourceSystem) that allows making OTL read/write query to the OTPlatform.
+Extension plugin for [DTCD-DatasourceSystem](https://github.com/ISGNeuroTeam/DTCD-DatasourceSystem) that allows making a couple of OTL requests to the OTP platform. the first one is for reading, the second one is for writing from the visualization.
 
 ## Getting Started
 
