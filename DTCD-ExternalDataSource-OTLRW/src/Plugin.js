@@ -1,12 +1,7 @@
-import { pluginMeta } from './../package.json';
+import {pluginMeta} from './../package.json';
 
-import {
-  InteractionSystemAdapter,
-  LogSystemAdapter,
-  InProgressError,
-  BaseExternalDataSource,
-} from 'SDK';
-import { OTPConnectorService } from '../../ot_js_connector';
+import {BaseExternalDataSource, InteractionSystemAdapter, LogSystemAdapter} from 'SDK';
+import {OTPConnectorService} from '../../ot_js_connector';
 
 const connectorConfig = {
   modeHTTP: 'http',
@@ -149,26 +144,30 @@ export class DataSourcePlugin extends BaseExternalDataSource {
     }
   }
 
-  datasetToOtl(dataset) {
-    const defaultString = '| makeresults count=1 '
-    return dataset.reduce((acc, item, itemIndex) => {
-      if (acc !== defaultString) {
-        acc += '| append [|makeresults count=1 '
-      }
-      const itemKeys = Object.keys(item)
-      itemKeys.forEach((prop, propIndex) => {
-        acc += `| eval ${prop}=`
-        if (item[prop] !== undefined) {
-          acc += typeof item[prop] === 'string' ? `"${item[prop]}"` : `${item[prop]}`
-        } else {
-          acc += `null`
-        }
-      })
-      if (itemIndex > 0) {
-        acc += ']'
-      }
+  datasetToOtl({data: dataset, schema}) {
 
+    const schemaKeys = Object.keys(schema)
+    let totalString = ''
+    totalString += dataset.reduce((acc, item, itemIndex) => {
+      acc += schemaKeys.reduce((string, col, colIndex)=> {
+        string += `${item[col]}`
+        if(colIndex+1 < schemaKeys.length) {
+          string += '###'
+        }
+        return string
+      },'')
+      if(itemIndex+1 < dataset.length) {
+        acc += '&&&'
+      }
       return acc
-    }, defaultString)
+    }, '')
+    return `
+        | makeresults count=1
+        | eval _total_string = "${totalString}"
+        | eval _split_string = split(_total_string, "&&&")
+        | mvexpand _split_string
+        | split _split_string cols=${schemaKeys.join(',')} sep=###
+        | fields - _total_string, _split_string
+      `
   }
 }
