@@ -1,12 +1,14 @@
+import {
+  BaseExternalDataSource,
+  InteractionSystemAdapter,
+  LogSystemAdapter,
+  StorageSystemAdapter,
+} from 'SDK';
 import {pluginMeta} from './../package.json';
-
-import {BaseExternalDataSource, InteractionSystemAdapter, LogSystemAdapter} from 'SDK';
 import {OTPConnectorService} from '../../ot_js_connector';
 
 const connectorConfig = {
   modeHTTP: 'http',
-  username: 'admin',
-  password: '12345678',
   maxJobExecTime: 300,
   checkjobDelayTime: 1,
   httpRequestTimeout: 70,
@@ -15,6 +17,7 @@ const connectorConfig = {
 
 export class DataSourcePlugin extends BaseExternalDataSource {
   #interactionSystem;
+  #storageSystem;
   #logSystem;
   #otpService;
 
@@ -37,6 +40,8 @@ export class DataSourcePlugin extends BaseExternalDataSource {
     super();
     this.#logSystem = new LogSystemAdapter('0.5.0', 'no-guid', pluginMeta.name);
     this.#interactionSystem = new InteractionSystemAdapter('0.4.0');
+    this.#storageSystem = new StorageSystemAdapter('0.9.0');
+
     this.#logSystem.debug(
       `Initing ExternalDatasource-OTLRW instance with parameters: ${JSON.stringify({
         original_otl,
@@ -59,6 +64,8 @@ export class DataSourcePlugin extends BaseExternalDataSource {
       this.#logSystem.debug(
         `Creating OTL job instance with parameters: ${JSON.stringify(this.#jobParams)}`
       );
+      this.#jobParams.username = await this.#getCurrentUsername();
+      this.#jobWriteParams.username = await this.#getCurrentUsername();
       this.#job = await this.#otpService.jobManager.createJob(this.#jobParams, { blocking: true });
       return true;
     } catch (error) {
@@ -93,6 +100,19 @@ export class DataSourcePlugin extends BaseExternalDataSource {
   async rerun() {
     if (!this.#job) return;
     await this.#job.run();
+  }
+
+  async #getCurrentUsername() {
+    const store = this.#storageSystem.session.system;
+
+    if (store.hasRecord('_username')) {
+      return store.getRecord('_username');
+    }
+
+    const { data: { username } } = await this.#interactionSystem.GETRequest('/dtcd_utils/v1/user?username');
+    store.putRecord('_username', username);
+
+    return username;
   }
 
   editParams({ queryString, queryWriteString, dataset, ...rest }) {
