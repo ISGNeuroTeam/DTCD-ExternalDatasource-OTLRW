@@ -1,6 +1,6 @@
 {
   "name": "dtcd-external-datasource-otlrw",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DTCD datasource system extension plugin",
   "pluginMeta": {
     "type": "extension",
